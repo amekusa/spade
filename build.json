@@ -4,7 +4,7 @@
     "dist_html": "app/index.html",
     "dist_css":  "app/css/style.css",
     "dist_js":   "app/js/main.js",
-    "src_html":  "src/html/index.html",
+    "src_html":  "src/index.html",
     "src_css":   "src/css/style.less",
     "src_js":    "src/js/main.js"
   }
