@@ -33,8 +33,10 @@ const root = dirname(__dirname); chdir(root);
 
 // paths
 const {paths} = require(`${root}/build.json`);
+const dir = {};
 for (let i in paths) {
 	paths[i] = `${root}/${paths[i]}`;
+	dir[i] = dirname(paths[i]);
 }
 const {
 	dist_html,
@@ -44,14 +46,6 @@ const {
 	src_css,
 	src_js,
 } = paths;
-
-const // directories
-	dist_html_dir = dirname(dist_html),
-	dist_css_dir = dirname(dist_css),
-	dist_js_dir = dirname(dist_js),
-	src_html_dir = dirname(src_html),
-	src_css_dir = dirname(src_css),
-	src_js_dir = dirname(src_js);
 
 // context
 const C = {
@@ -68,7 +62,7 @@ const T = {
 	},
 
 	js_clean() {
-		return io.rm(dist_js_dir);
+		return io.rm(dir.dist_js);
 	},
 
 	js_build() {
@@ -97,10 +91,10 @@ const T = {
 	},
 
 	js_minify() {
-		let dst = dist_js_dir;
+		let dst = dir.dist_js;
 		let src = [
-			`${dist_js_dir}/**/*.js`,
-			`!${dist_js_dir}/**/*.min.js`,
+			`${dir.dist_js}/**/*.js`,
+			`!${dir.dist_js}/**/*.min.js`,
 		];
 		let opts = {};
 		return $.src(src)
@@ -115,7 +109,7 @@ const T = {
 	},
 
 	css_clean() {
-		return io.rm(dist_css_dir);
+		return io.rm(dir.dist_css);
 	},
 
 	css_build() {
@@ -130,10 +124,10 @@ const T = {
 	},
 
 	css_minify() {
-		let dst = dist_css_dir;
+		let dst = dir.dist_css;
 		let src = [
-			`${dist_css_dir}/**/*.css`,
-			`!${dist_css_dir}/**/*.min.css`,
+			`${dir.dist_css}/**/*.css`,
+			`!${dir.dist_css}/**/*.min.css`,
 		];
 		let opts = {
 			inline: ['all'],
