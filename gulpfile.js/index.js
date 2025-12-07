@@ -4,8 +4,10 @@
  */
 
 const // node
-	{chdir} = require('node:process'),
+	{env, chdir} = require('node:process'),
 	{dirname, basename} = require('node:path');
+
+const prod = env.NODE_ENV == 'production';
 
 const // gulp
 	$ = require('gulp'),
@@ -35,14 +37,20 @@ for (let i in paths) {
 	paths[i] = `${root}/${paths[i]}`;
 }
 const {
+	dist_html,
+	dist_css,
 	dist_js,
-	src_js,
 	src_html,
-	src_less,
+	src_css,
+	src_js,
 } = paths;
 
 const // directories
+	dist_html_dir = dirname(dist_html),
+	dist_css_dir = dirname(dist_css),
 	dist_js_dir = dirname(dist_js),
+	src_html_dir = dirname(src_html),
+	src_css_dir = dirname(src_css),
 	src_js_dir = dirname(src_js);
 
 // context
@@ -106,6 +114,42 @@ const T = {
 			.pipe($.dest(dst));
 	},
 
+	css_clean() {
+		return io.rm(dist_css_dir);
+	},
+
+	css_build() {
+		bs.notify(`Building CSS...`);
+		let dst = dist_css;
+		let src = src_css;
+		let opts = prod ? '' : '--source-map';
+		return sh.exec(`lessc ${opts} '${src}' '${dst}'`).catch(err => {
+			bs.notify(`<b style="color:hotpink">CSS Build Failure!</b>`, 15000);
+			throw err;
+		});
+	},
+
+	css_minify() {
+		let dst = dist_css_dir;
+		let src = [
+			`${dist_css_dir}/**/*.css`,
+			`!${dist_css_dir}/**/*.min.css`,
+		];
+		let opts = {
+			inline: ['all'],
+			level: 1,
+		};
+		return $.src(src)
+			.pipe(io.modifyStream((data, enc) => {
+				return minifyCSS(data, enc, opts).then(r => {
+					log(`Minify stats:`, r.stats.summary);
+					return r.data;
+				});
+			}))
+			.pipe($rename({extname: '.min.css'}))
+			.pipe($.dest(dst));
+	},
+
 }
 
 /**
@@ -115,6 +159,11 @@ T.js = $S(
 	T.js_clean,
 	T.js_build,
 	T.js_minify
+);
+T.css = $S(
+	T.css_clean,
+	T.css_build,
+	T.css_minify
 );
 
 module.exports = T;
