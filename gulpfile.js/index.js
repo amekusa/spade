@@ -144,6 +144,26 @@ const T = {
 			.pipe($.dest(dst));
 	},
 
+	html_clean() {
+		return io.rm(dir.dist_html);
+	},
+
+	html_build() {
+		let dst = dir.dist_html;
+		let src = src_html;
+		return $.src(src)
+			.pipe(io.modifyStream((data, enc) => {
+				if (prod) {
+					let js = basename(dist_js);
+					let css = basename(dist_css);
+					data = data.replaceAll(js, io.ext(js, '.min.js'));
+					data = data.replaceAll(css, io.ext(css, '.min.css'));
+				}
+				return data;
+			}))
+			.pipe($.dest(dst));
+	},
+
 }
 
 /**
@@ -158,6 +178,10 @@ T.css = $S(
 	T.css_clean,
 	T.css_build,
 	T.css_minify
+);
+T.html = $S(
+	T.html_clean,
+	T.html_build
 );
 
 module.exports = T;
