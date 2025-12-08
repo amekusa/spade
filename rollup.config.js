@@ -42,8 +42,14 @@ const M = {
 		replace({
 			preventAssignment: true,
 			values: {
-				'process.env.NODE_ENV': JSON.stringify(prod ? 'production' : 'development'),
+				'process.env.NODE_ENV': prod ? '"production"' : '"development"',
 				  // NOTE: Necessary to fix "process is not defined" error in browser.
+
+				// Vue.js compile-time flags
+				// see: https://vuejs.org/api/compile-time-flags.html
+				'__VUE_OPTIONS_API__': 'true',
+				'__VUE_PROD_DEVTOOLS__': 'false',
+				'__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
 			},
 		}),
 		vue(),
