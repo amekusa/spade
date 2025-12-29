@@ -8,6 +8,7 @@ import {greet} from './fn.js';
 import App from './vue/App.vue'; // Base component
 import Home from './vue/Home.vue';
 import About from './vue/About.vue';
+import Three from './vue/Three.vue';
 
 // Vue router
 const router = createRouter({
@@ -15,6 +16,7 @@ const router = createRouter({
 	routes: [
 		{path: '/',      component: Home},
 		{path: '/about', component: About},
+		{path: '/three', component: Three},
 	]
 });
 
