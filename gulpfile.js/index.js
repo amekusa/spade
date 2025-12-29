@@ -214,7 +214,7 @@ const T = {
 	watch() {
 		// auto-build js
 		$.watch([
-			`${dirs.src_js}/**/*.js`,
+			`${dirs.src_js}/**/*.{js,vue}`,
 		], T.js_build);
 
 		// auto-build css
