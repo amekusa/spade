@@ -4,6 +4,7 @@
  */
 
 // node
+const {rm} = require('node:fs/promises');
 const {join, dirname, basename, relative} = require('node:path');
 const {env, chdir, exit} = require('node:process');
 const prod = env.NODE_ENV == 'production';
@@ -64,7 +65,7 @@ const T = {
 	},
 
 	clean() {
-		return io.rm(paths.dist);
+		return rm(paths.dist, {force: true, recursive: true});
 	},
 
 	run(done) {
