@@ -22,7 +22,7 @@
     "vue-router": "^4.6.4"
   },
   "boilerplate": {
-    "repository": "https://github.com/amekusa/spa.ce.git",
+    "repository": "https://github.com/amekusa/spade.git",
     "version": "1.0.0"
   }
 }
