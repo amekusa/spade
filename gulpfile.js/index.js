@@ -235,7 +235,7 @@ const T = {
 			`${paths.src}/index.html`,
 		], T.html_build);
 
-		// reload rollup config
+		// auto-reload rollup config
 		$.watch([
 			`${root}/rollup.config.js`,
 		], () => {
