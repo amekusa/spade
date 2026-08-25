@@ -30,30 +30,41 @@ const {log, debug, warn, error} = console;
 // project root
 const root = dirname(__dirname); chdir(root);
 
-// config
-const config = require(`${root}/build.json`);
-const paths = {};
-const dirs = {};
-for (let k in config.paths) {
-	let v = config.paths[k];
-	let dir = '';
-	if      (k.startsWith('dist_')) dir = config.paths.dist;
-	else if (k.startsWith('src_'))  dir = config.paths.src;
-	paths[k] = join(root, dir, v);
-	dirs[k] = dirname(paths[k]);
-}
-const {
-	dist_css,
-	dist_js,
-	src_css,
-	src_js,
-} = paths;
-
-// context
+// contextual variables
 const C = {
-	rollup: null, // rollup config
+	config: null, // build config
+	paths: null, // absolute paths
+	dirs: null, // absolute dirs
+	rollup: null, // rollup config/cache
 	imported: null, // HTML for imported assets
 };
+
+// load config
+function configure() {
+	let config = require(`${root}/build.json`);
+	let paths = {};
+	let dirs = {};
+	for (let k in config.paths) {
+		let v = config.paths[k];
+		let dir = '';
+		if      (k.startsWith('dist_')) dir = config.paths.dist;
+		else if (k.startsWith('src_'))  dir = config.paths.src;
+		paths[k] = join(root, dir, v);
+		dirs[k] = dirname(paths[k]);
+	}
+	C.config = config;
+	C.paths = paths;
+	C.dirs = dirs;
+
+	const {
+		dist_css,
+		dist_js,
+		src_css,
+		src_js,
+	} = paths;
+
+}
+configure();
 
 // tasks
 const T = {
@@ -65,13 +76,13 @@ const T = {
 	},
 
 	clean() {
-		return rm(paths.dist, {force: true, recursive: true});
+		return rm(C.paths.dist, {force: true, recursive: true});
 	},
 
 	run(done) {
 		return bs.active ? done() : bs.init({
 			server: {
-				baseDir: paths.dist,
+				baseDir: C.paths.dist,
 				index: 'index.html',
 			},
 			single: true, // Required for vue-router
@@ -115,10 +126,10 @@ const T = {
 	},
 
 	js_minify() {
-		let dst = dirs.dist_js;
+		let dst = C.dirs.dist_js;
 		let src = [
-			`${dirs.dist_js}/**/*.js`,
-			`!${dirs.dist_js}/**/*.min.js`,
+			`${C.dirs.dist_js}/**/*.js`,
+			`!${C.dirs.dist_js}/**/*.min.js`,
 		];
 		let opts = {};
 		return $.src(src)
@@ -134,8 +145,8 @@ const T = {
 
 	css_build() {
 		bs.notify(`Building CSS...`);
-		let dst = dist_css;
-		let src = src_css;
+		let dst = C.paths.dist_css;
+		let src = C.paths.src_css;
 		let opts = prod ? '' : '--source-map';
 		return sh.exec(`lessc ${opts} '${src}' '${dst}'`).catch(err => {
 			bs.notify(`<b style="color:hotpink">CSS Build Failure!</b>`, 15000);
@@ -146,10 +157,10 @@ const T = {
 	},
 
 	css_minify() {
-		let dst = dirs.dist_css;
+		let dst = C.dirs.dist_css;
 		let src = [
-			`${dirs.dist_css}/**/*.css`,
-			`!${dirs.dist_css}/**/*.min.css`,
+			`${C.dirs.dist_css}/**/*.css`,
+			`!${C.dirs.dist_css}/**/*.min.css`,
 		];
 		let opts = {
 			inline: ['all'],
@@ -167,13 +178,13 @@ const T = {
 	},
 
 	html_build() {
-		let dst = paths.dist;
-		let src = `${paths.src}/index.html`;
+		let dst = C.paths.dist;
+		let src = `${C.paths.src}/index.html`;
 		let r = $.src(src)
 			.pipe(io.modifyStream((content, enc) => {
 				let data = Object.assign({
 					imported: C.imported,
-				}, config);
+				}, C.config);
 				return subst(content, data, {
 					modifier(v, k) {
 						if (prod) {
@@ -192,23 +203,23 @@ const T = {
 			}))
 			.pipe($.dest(dst));
 
-		if (config.tweaks['404_fallback']) {
+		if (C.config.tweaks['404_fallback']) {
 			r = r.pipe($rename('404.html')).pipe($.dest(dst));
 		}
 		return r;
 	},
 
 	html_assets(done) {
-		let {imports} = config;
+		let {imports} = C.config;
 		if (!imports) return done();
 		if (C.imported) return done();
 		let importer = new io.AssetImporter({
 			minify: prod,
-			src: paths.src,
-			dst: paths.dist,
+			src: C.paths.src,
+			dst: C.paths.dist,
 		});
 		importer.add(imports);
-		if (config.tweaks.nojekyll) {
+		if (C.config.tweaks.nojekyll) {
 			importer.add({resolve: 'create', as: '.nojekyll', src: '', dst: '.'});
 		}
 		return importer.import().then(() => {
@@ -222,17 +233,17 @@ const T = {
 	watch() {
 		// auto-build js
 		$.watch([
-			`${dirs.src_js}/**/*.{js,vue}`,
+			`${C.dirs.src_js}/**/*.{js,vue}`,
 		], T.js_build);
 
 		// auto-build css
 		$.watch([
-			`${dirs.src_css}/**/*.{less,css}`,
+			`${C.dirs.src_css}/**/*.{less,css}`,
 		], T.css_build);
 
 		// auto-build html
 		$.watch([
-			`${paths.src}/index.html`,
+			`${C.paths.src}/index.html`,
 		], T.html_build);
 
 		// auto-reload rollup config
