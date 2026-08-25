@@ -55,14 +55,6 @@ function configure() {
 	C.config = config;
 	C.paths = paths;
 	C.dirs = dirs;
-
-	const {
-		dist_css,
-		dist_js,
-		src_css,
-		src_js,
-	} = paths;
-
 }
 configure();
 
