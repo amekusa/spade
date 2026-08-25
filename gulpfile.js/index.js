@@ -234,6 +234,15 @@ const T = {
 		$.watch([
 			`${paths.src}/index.html`,
 		], T.html_build);
+
+		// reload rollup config
+		$.watch([
+			`${root}/rollup.config.js`,
+		], () => {
+			C.rollup = null;
+			log(`Rollup: Config is changed.`);
+			log(`Rollup: Cache is cleared.`);
+		});
 	},
 }
 
