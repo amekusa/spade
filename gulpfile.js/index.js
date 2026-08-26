@@ -22,6 +22,7 @@ const $rename = require('gulp-rename');
 const {rollup} = require('rollup');
 const bs = require('browser-sync').create();
 const {subst, io, sh} = require('@amekusa/util.js');
+const {$task} = require('./helpers.js');
 const {minifyJS, minifyCSS} = require('./minify.js');
 
 // shortcuts
@@ -30,18 +31,12 @@ const {log, debug, warn, error} = console;
 // project root
 const root = dirname(__dirname); chdir(root);
 
-// contextual variables
-const C = {
-	config: null, // build config
-	paths: null, // absolute paths
-	dirs: null, // absolute dirs
-	rollup: null, // rollup config/cache
-	imported: null, // HTML for imported assets
-};
+// context
+const C = {};
 
-// load config
-function configure() {
-	let config = require(`${root}/build.json`);
+// initialize the context
+function init() {
+	let config = io.requireNew(`${root}/build.json`);
 	let paths = {};
 	let dirs = {};
 	for (let k in config.paths) {
@@ -52,11 +47,14 @@ function configure() {
 		paths[k] = join(root, dir, v);
 		dirs[k] = dirname(paths[k]);
 	}
-	C.config = config;
-	C.paths = paths;
-	C.dirs = dirs;
+	C.config = config; // build config
+	C.paths = paths; // absolute paths
+	C.dirs = dirs; // absolute dirs
+	C.rollup = null; // rollup config
+	C.imported = null; // HTMLs for imported assets
 }
-configure();
+
+init();
 
 // tasks
 const T = {
@@ -97,7 +95,7 @@ const T = {
 			if (typeof conf.cache == 'object') log(`Rollup: Cache is used.`);
 			else conf.cache = dev;
 		} else {
-			conf = require(`${root}/rollup.config.js`);
+			conf = io.requireNew(`${root}/rollup.config.js`);
 			conf.cache = dev;
 		}
 		return rollup(conf).then(bundle => {
@@ -222,37 +220,7 @@ const T = {
 		});
 	},
 
-	watch() {
-		// auto-build js
-		$.watch([
-			`${C.dirs.src_js}/**/*.{js,vue}`,
-		], T.js_build);
-
-		// auto-build css
-		$.watch([
-			`${C.dirs.src_css}/**/*.{less,css}`,
-		], T.css_build);
-
-		// auto-build html
-		$.watch([
-			`${C.paths.src}/index.html`,
-		], T.html_build);
-
-		// auto-reload rollup config
-		$.watch([
-			`${root}/rollup.config.js`,
-		], () => {
-			C.rollup = null;
-			log(`Rollup: Config is changed.`);
-			log(`Rollup: Cache is cleared.`);
-		});
-	},
 }
-
-const noop = done => {done()};
-const $prod = prod
-	? task => task
-	: ()   => noop;
 
 T.js = prod ? $S(
 	T.js_build,
@@ -275,11 +243,55 @@ T.build = $P(
 	T.html
 );
 
-T.dist = $S(
-	$prod(T.clean),
+T.dist = prod ? $S(
+	T.clean,
+	T.build,
+	T.run
+) : $S(
 	T.build,
 	T.run
 );
+
+T.watch = function watch() {
+	// auto-build js
+	$.watch([
+		`${C.dirs.src_js}/**/*.{js,vue}`,
+	], T.js_build);
+
+	// auto-build css
+	$.watch([
+		`${C.dirs.src_css}/**/*.{less,css}`,
+	], T.css_build);
+
+	// auto-build html
+	$.watch([
+		`${C.paths.src}/index.html`,
+	], T.html_build);
+
+	// auto-reload rollup config
+	$.watch([
+		`${root}/rollup.config.js`,
+	], $S(
+		$task('rollup_reset', () => {
+			C.rollup = null;
+		}),
+		T.js_build
+	));
+
+	// auto-reset context
+	$.watch([
+		`${root}/package.json`,
+		`${root}/build.json`,
+	], bs.active ? $S(
+		$task(bs.exit),
+		$task(init),
+		T.build,
+		T.run
+	) : $S(
+		$task(init),
+		T.build
+	));
+};
 
 T.dev = $S(
 	T.dist,
