@@ -1,11 +1,37 @@
 @charset "utf-8";
 
+@import "mixins.less";
+
 html, body {
 	height: 100%;
 }
 
 body {
 	margin: 0;
-	background-color: #123;
+	background-color: #112244;
 	color: white;
+	font-size: 16px;
+	font-family: Helvetica, sans-serif;
+	line-height: 1.75;
 }
+
+#app {
+	padding: 1rem;
+}
+
+.pages {
+	display: flex;
+	gap: .5rem;
+
+	a {
+		.button();
+		display: block;
+		background-color: #1144ff;
+		color: white;
+
+		&.current {
+			opacity: .5;
+		}
+	}
+}
+
