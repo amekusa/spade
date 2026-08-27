@@ -4,7 +4,7 @@
  */
 
 // node
-const {rm} = require('node:fs/promises');
+const {rm, readFile, writeFile} = require('node:fs/promises');
 const {join, dirname, basename, relative} = require('node:path');
 const {env, chdir, exit} = require('node:process');
 const prod = env.NODE_ENV == 'production';
@@ -23,7 +23,7 @@ const {rollup} = require('rollup');
 const bs = require('browser-sync').create();
 const {subst, io, sh} = require('@amekusa/util.js');
 const {$task} = require('./helpers.js');
-const {minifyJS, minifyCSS} = require('./minify.js');
+const minify = require('./minify.js');
 
 // shortcuts
 const {log, debug, warn, error} = console;
@@ -55,6 +55,25 @@ function init() {
 }
 
 init();
+
+function minifyJS(data, enc) {
+	let opts = {};
+	return minify.minifyJS(data, enc, opts).then(r => {
+		log(`Minify stats:`, r.stats.summary);
+		return r.data;
+	});
+}
+
+function minifyCSS(data, enc) {
+	let opts = {
+		inline: ['all'],
+		level: 1,
+	};
+	return minify.minifyCSS(data, enc, opts).then(r => {
+		log(`Minify stats:`, r.stats.summary);
+		return r.data;
+	});
+}
 
 // tasks
 const T = {
@@ -118,14 +137,8 @@ const T = {
 	js_minify() {
 		let dst = C.dirs.dist_js;
 		let src = C.paths.dist_js;
-		let opts = {};
 		return $.src(src)
-			.pipe(io.modifyStream((data, enc) => {
-				return minifyJS(data, enc, opts).then(r => {
-					log(`Minify stats:`, r.stats.summary);
-					return r.data;
-				});
-			}))
+			.pipe(io.modifyStream((data, enc) => minifyJS(data, enc)))
 			.pipe($rename({extname: '.min.js'}))
 			.pipe($.dest(dst));
 	},
@@ -146,17 +159,8 @@ const T = {
 	css_minify() {
 		let dst = C.dirs.dist_css;
 		let src = C.paths.dist_css;
-		let opts = {
-			inline: ['all'],
-			level: 1,
-		};
 		return $.src(src)
-			.pipe(io.modifyStream((data, enc) => {
-				return minifyCSS(data, enc, opts).then(r => {
-					log(`Minify stats:`, r.stats.summary);
-					return r.data;
-				});
-			}))
+			.pipe(io.modifyStream((data, enc) => minifyCSS(data, enc)))
 			.pipe($rename({extname: '.min.css'}))
 			.pipe($.dest(dst));
 	},
@@ -198,9 +202,20 @@ const T = {
 		if (!imports) return done();
 		if (C.imported) return done();
 		let importer = new io.AssetImporter({
-			minify: prod,
 			src: C.paths.src,
 			dst: C.paths.dist,
+			minify: dev ? false : (file, opts) => {
+				let extension = io.ext(file);
+				let minify = {
+					'.js':  minifyJS,
+					'.css': minifyCSS,
+				}[extension];
+				if (!minify) return Promise.resolve();
+				let {encoding} = opts;
+				return readFile(file, {encoding})
+					.then(data => minify(data, encoding))
+					.then(data => writeFile(file, data, {encoding}));
+			},
 		});
 		importer.add(imports);
 		if (C.config.tweaks.nojekyll) {
