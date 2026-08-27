@@ -117,10 +117,7 @@ const T = {
 
 	js_minify() {
 		let dst = C.dirs.dist_js;
-		let src = [
-			`${C.dirs.dist_js}/**/*.js`,
-			`!${C.dirs.dist_js}/**/*.min.js`,
-		];
+		let src = C.paths.dist_js;
 		let opts = {};
 		return $.src(src)
 			.pipe(io.modifyStream((data, enc) => {
@@ -148,10 +145,7 @@ const T = {
 
 	css_minify() {
 		let dst = C.dirs.dist_css;
-		let src = [
-			`${C.dirs.dist_css}/**/*.css`,
-			`!${C.dirs.dist_css}/**/*.min.css`,
-		];
+		let src = C.paths.dist_css;
 		let opts = {
 			inline: ['all'],
 			level: 1,
