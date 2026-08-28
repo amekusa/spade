@@ -135,8 +135,8 @@ const T = {
 	},
 
 	js_minify() {
-		let dst = C.dirs.dst_js;
 		let src = C.paths.dst_js;
+		let dst = C.dirs.dst_js;
 		return $.src(src)
 			.pipe(io.modifyStream((data, enc) => minifyJS(data, enc)))
 			.pipe($rename({extname: '.min.js'}))
@@ -145,8 +145,8 @@ const T = {
 
 	css_build() {
 		bs.notify(`Building CSS...`);
-		let dst = C.paths.dst_css;
 		let src = C.paths.src_css;
+		let dst = C.paths.dst_css;
 		let opts = prod ? '' : '--source-map';
 		return sh.exec(`lessc ${opts} '${src}' '${dst}'`).catch(err => {
 			bs.notify(`<b style="color:hotpink">CSS Build Failure!</b>`, 15000);
@@ -157,8 +157,8 @@ const T = {
 	},
 
 	css_minify() {
-		let dst = C.dirs.dst_css;
 		let src = C.paths.dst_css;
+		let dst = C.dirs.dst_css;
 		return $.src(src)
 			.pipe(io.modifyStream((data, enc) => minifyCSS(data, enc)))
 			.pipe($rename({extname: '.min.css'}))
@@ -166,8 +166,8 @@ const T = {
 	},
 
 	html_build() {
-		let dst = C.paths.dst;
 		let src = `${C.paths.src}/index.html`;
+		let dst = C.paths.dst;
 		let r = $.src(src)
 			.pipe(io.modifyStream((content, enc) => {
 				let data = Object.assign({
