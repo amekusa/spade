@@ -42,8 +42,8 @@ function init() {
 	for (let k in config.paths) {
 		let v = config.paths[k];
 		let dir = '';
-		if      (k.startsWith('dist_')) dir = config.paths.dist;
-		else if (k.startsWith('src_'))  dir = config.paths.src;
+		if      (k.startsWith('dst_')) dir = config.paths.dst;
+		else if (k.startsWith('src_')) dir = config.paths.src;
 		paths[k] = join(root, dir, v);
 		dirs[k] = dirname(paths[k]);
 	}
@@ -85,13 +85,13 @@ const T = {
 	},
 
 	clean() {
-		return rm(C.paths.dist, {force: true, recursive: true});
+		return rm(C.paths.dst, {force: true, recursive: true});
 	},
 
 	run(done) {
 		return bs.active ? done() : bs.init({
 			server: {
-				baseDir: C.paths.dist,
+				baseDir: C.paths.dst,
 				index: 'index.html',
 			},
 			single: true, // Required for vue-router
@@ -135,8 +135,8 @@ const T = {
 	},
 
 	js_minify() {
-		let dst = C.dirs.dist_js;
-		let src = C.paths.dist_js;
+		let dst = C.dirs.dst_js;
+		let src = C.paths.dst_js;
 		return $.src(src)
 			.pipe(io.modifyStream((data, enc) => minifyJS(data, enc)))
 			.pipe($rename({extname: '.min.js'}))
@@ -145,7 +145,7 @@ const T = {
 
 	css_build() {
 		bs.notify(`Building CSS...`);
-		let dst = C.paths.dist_css;
+		let dst = C.paths.dst_css;
 		let src = C.paths.src_css;
 		let opts = prod ? '' : '--source-map';
 		return sh.exec(`lessc ${opts} '${src}' '${dst}'`).catch(err => {
@@ -157,8 +157,8 @@ const T = {
 	},
 
 	css_minify() {
-		let dst = C.dirs.dist_css;
-		let src = C.paths.dist_css;
+		let dst = C.dirs.dst_css;
+		let src = C.paths.dst_css;
 		return $.src(src)
 			.pipe(io.modifyStream((data, enc) => minifyCSS(data, enc)))
 			.pipe($rename({extname: '.min.css'}))
@@ -166,7 +166,7 @@ const T = {
 	},
 
 	html_build() {
-		let dst = C.paths.dist;
+		let dst = C.paths.dst;
 		let src = `${C.paths.src}/index.html`;
 		let r = $.src(src)
 			.pipe(io.modifyStream((content, enc) => {
@@ -177,10 +177,10 @@ const T = {
 					modifier(v, k) {
 						if (prod) {
 							switch (k) {
-							case 'paths.dist_js':
+							case 'paths.dst_js':
 								v = io.ext(v, '.min.js');
 								break;
-							case 'paths.dist_css':
+							case 'paths.dst_css':
 								v = io.ext(v, '.min.css');
 								break;
 							}
@@ -203,7 +203,7 @@ const T = {
 		if (C.imported) return done();
 		let importer = new io.AssetImporter({
 			src: C.paths.src,
-			dst: C.paths.dist,
+			dst: C.paths.dst,
 			minify: dev ? false : (file, opts) => {
 				let extension = io.ext(file);
 				let minify = {

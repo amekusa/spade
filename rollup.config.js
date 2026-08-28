@@ -19,10 +19,10 @@ const vue = require('rollup-plugin-vue');
 const {
 	name,
 	paths: {
-		dist,
-		dist_js,
 		src,
-		src_js
+		src_js,
+		dst,
+		dst_js,
 	}
 } = require('./build.json');
 
@@ -33,7 +33,7 @@ const M = {
 	input,
 	output: {
 		name,
-		file: join(dist, dist_js),
+		file: join(dst, dst_js),
 		format: 'iife',
 		indent: dev,
 		sourcemap: dev,

@@ -3,12 +3,12 @@
   "title":      "My App",
   "lang":       "en",
   "paths": {
-    "dist":     "app",
-    "dist_css": "css/style.css",
-    "dist_js":  "js/main.js",
-    "src":      "src",
-    "src_css":  "css/style.less",
-    "src_js":   "js/main.js"
+    "src":        "src",
+    "src_js":     "js/main.js",
+    "src_css":    "css/style.less",
+    "dst":        "app",
+    "dst_js":     "js/main.js",
+    "dst_css":    "css/style.css"
   },
   "imports": [
     {
