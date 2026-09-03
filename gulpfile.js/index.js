@@ -170,7 +170,7 @@ const T = {
 		let r = $.src(src)
 			.pipe(io.modifyStream((content, enc) => {
 				let data = Object.assign({
-					assets: C.assetsHTML,
+					assets: C.assets.html,
 				}, C.config);
 				return subst(content, data, {
 					modifier(v, k) {
@@ -198,33 +198,35 @@ const T = {
 
 	html_assets(done) {
 		if (!C.assets) {
-			C.assets = io.requireNew(`${root}/assets.json`);
-			C.assetsHTML = {};
-			C.assetImporter = new io.AssetImporter({
-				src: C.paths.src_assets,
-				dst: C.paths.dst_assets,
-				minify: dev ? false : (file, opts) => {
-					let extension = io.ext(file);
-					let minify = {
-						'.js':  minifyJS,
-						'.css': minifyCSS,
-					}[extension];
-					if (!minify) return Promise.resolve();
-					let {encoding} = opts;
-					return readFile(file, {encoding})
-						.then(data => minify(data, encoding))
-						.then(data => writeFile(file, data, {encoding}));
-				},
-			});
+			C.assets = {
+				entries: io.requireNew(`${root}/assets.json`),
+				importer: new io.AssetImporter({
+					src: C.paths.src_assets,
+					dst: C.paths.dst_assets,
+					minify: dev ? false : (file, opts) => {
+						let extension = io.ext(file);
+						let minify = {
+							'.js':  minifyJS,
+							'.css': minifyCSS,
+						}[extension];
+						if (!minify) return Promise.resolve();
+						let {encoding} = opts;
+						return readFile(file, {encoding})
+							.then(data => minify(data, encoding))
+							.then(data => writeFile(file, data, {encoding}));
+					},
+				}),
+				html: {},
+			};
 		}
-		let importer = C.assetImporter;
-		importer.add(C.assets);
+		let importer = C.assets.importer;
+		importer.add(C.assets.entries);
 		if (C.config.tweaks.nojekyll) {
 			importer.add({resolve: 'create', as: '.nojekyll', src: '', dst: '.'});
 		}
 		return importer.import().then(() => {
 			for (let type in importer.results) {
-				C.assetsHTML[type] = importer.toHTML(type);
+				C.assets.html[type] = importer.toHTML(type);
 			}
 		});
 	},
