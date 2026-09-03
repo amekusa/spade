@@ -1,27 +1,17 @@
 {
-  "name":       "my_app",
-  "title":      "My App",
-  "lang":       "en",
+  "name":         "my_app",
+  "title":        "My App",
+  "lang":         "en",
   "paths": {
     "src":        "src",
     "src_js":     "js/main.js",
     "src_css":    "css/style.less",
+    "src_assets": "assets",
     "dst":        "app",
     "dst_js":     "js/main.js",
-    "dst_css":    "css/style.css"
+    "dst_css":    "css/style.css",
+    "dst_assets": "."
   },
-  "imports": [
-    {
-      "resolve": "local",
-      "src": "favicon.svg",
-      "dst": "."
-    },
-    {
-      "resolve": "local",
-      "src": "css/extra.css",
-      "dst": "css"
-    }
-  ],
   "tweaks": {
     "nojekyll": true,
     "404_fallback": true

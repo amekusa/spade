@@ -50,8 +50,7 @@ function init() {
 	C.config = config; // build config
 	C.paths = paths; // absolute paths
 	C.dirs = dirs; // absolute dirs
-	C.rollup = null; // rollup config
-	C.imported = null; // HTMLs for imported assets
+	C.rollup = null; // rollup cache
 }
 
 init();
@@ -171,7 +170,7 @@ const T = {
 		let r = $.src(src)
 			.pipe(io.modifyStream((content, enc) => {
 				let data = Object.assign({
-					imported: C.imported,
+					assets: C.assetsHTML,
 				}, C.config);
 				return subst(content, data, {
 					modifier(v, k) {
@@ -198,33 +197,34 @@ const T = {
 	},
 
 	html_assets(done) {
-		let {imports} = C.config;
-		if (!imports) return done();
-		if (C.imported) return done();
-		let importer = new io.AssetImporter({
-			src: C.paths.src,
-			dst: C.paths.dst,
-			minify: dev ? false : (file, opts) => {
-				let extension = io.ext(file);
-				let minify = {
-					'.js':  minifyJS,
-					'.css': minifyCSS,
-				}[extension];
-				if (!minify) return Promise.resolve();
-				let {encoding} = opts;
-				return readFile(file, {encoding})
-					.then(data => minify(data, encoding))
-					.then(data => writeFile(file, data, {encoding}));
-			},
-		});
-		importer.add(imports);
+		if (!C.assets) {
+			C.assets = io.requireNew(`${root}/assets.json`);
+			C.assetsHTML = {};
+			C.assetImporter = new io.AssetImporter({
+				src: C.paths.src_assets,
+				dst: C.paths.dst_assets,
+				minify: dev ? false : (file, opts) => {
+					let extension = io.ext(file);
+					let minify = {
+						'.js':  minifyJS,
+						'.css': minifyCSS,
+					}[extension];
+					if (!minify) return Promise.resolve();
+					let {encoding} = opts;
+					return readFile(file, {encoding})
+						.then(data => minify(data, encoding))
+						.then(data => writeFile(file, data, {encoding}));
+				},
+			});
+		}
+		let importer = C.assetImporter;
+		importer.add(C.assets);
 		if (C.config.tweaks.nojekyll) {
 			importer.add({resolve: 'create', as: '.nojekyll', src: '', dst: '.'});
 		}
 		return importer.import().then(() => {
-			C.imported = {};
-			for (let k in importer.results) {
-				C.imported[k] = importer.toHTML(k);
+			for (let type in importer.results) {
+				C.assetsHTML[type] = importer.toHTML(type);
 			}
 		});
 	},
@@ -262,32 +262,36 @@ T.dist = prod ? $S(
 );
 
 T.watch = function watch() {
-	// auto-build js
 	$.watch([
 		`${C.dirs.src_js}/**/*.{js,vue}`,
 	], T.js_build);
 
-	// auto-build css
 	$.watch([
 		`${C.dirs.src_css}/**/*.{less,css}`,
 	], T.css_build);
 
-	// auto-build html
 	$.watch([
 		`${C.paths.src}/index.html`,
 	], T.html_build);
 
-	// auto-reload rollup config
+	$.watch([
+		`${root}/assets.json`,
+	], $S(
+		$task(() => { C.assets = null }),
+		T.html
+	));
+
+	$.watch([
+		`${C.paths.src_assets}/**/*`,
+	], T.html);
+
 	$.watch([
 		`${root}/rollup.config.js`,
 	], $S(
-		$task('rollup_reset', () => {
-			C.rollup = null;
-		}),
+		$task(() => { C.rollup = null }),
 		T.js_build
 	));
 
-	// auto-reset context
 	$.watch([
 		`${root}/package.json`,
 		`${root}/build.json`,

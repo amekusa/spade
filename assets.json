@@ -1,0 +1,12 @@
+[
+  {
+    "resolve": "local",
+    "src":     "favicon.svg",
+    "dst":     "."
+  },
+  {
+    "resolve": "local",
+    "src":     "extra.css",
+    "dst":     "css"
+  }
+]
