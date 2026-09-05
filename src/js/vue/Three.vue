@@ -4,15 +4,15 @@ import {start, end} from '../demos/three.js';
 
 export default {
 	setup() {
-		let canvas = ref(null);
+		let cnv = ref(null);
 		return {
-			canvas,
+			cnv,
 		};
 	},
 	mounted() {
 		start({
+			canvas: this.cnv,
 			antialias: true,
-			canvas: this.canvas,
 		});
 	},
 	unmounted() {
@@ -21,7 +21,13 @@ export default {
 };
 </script>
 
+<style scoped>
+canvas {
+	width:  100% !important;
+}
+</style>
+
 <template>
 	<h2>Three.js Demo</h2>
-	<canvas ref="canvas"></canvas>
+	<canvas ref="cnv"></canvas>
 </template>
