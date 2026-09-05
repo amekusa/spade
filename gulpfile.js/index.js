@@ -138,7 +138,7 @@ const T = {
 		let src = C.paths.dst_js;
 		let dst = C.dirs.dst_js;
 		return $.src(src)
-			.pipe(io.modifyStream((data, enc) => minifyJS(data, enc)))
+			.pipe(io.transform((data, enc) => minifyJS(data, enc)))
 			.pipe($rename({extname: '.min.js'}))
 			.pipe($.dest(dst));
 	},
@@ -165,7 +165,7 @@ const T = {
 		let src = C.paths.dst_css;
 		let dst = C.dirs.dst_css;
 		return $.src(src)
-			.pipe(io.modifyStream((data, enc) => minifyCSS(data, enc)))
+			.pipe(io.transform((data, enc) => minifyCSS(data, enc)))
 			.pipe($rename({extname: '.min.css'}))
 			.pipe($.dest(dst));
 	},
@@ -174,7 +174,7 @@ const T = {
 		let src = `${C.paths.src}/index.html`;
 		let dst = C.paths.dst;
 		let r = $.src(src)
-			.pipe(io.modifyStream((content, enc) => {
+			.pipe(io.transform((content, enc) => {
 				let data = Object.assign({
 					assets: C.assets.html,
 				}, C.config);
