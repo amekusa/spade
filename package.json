@@ -15,6 +15,7 @@
     "gulp-rename": "^2.1.0",
     "less": "^4.5.1",
     "rollup": "^4.54.0",
+    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue": "^6.0.0",
     "terser": "^5.44.1",
     "three": "^0.182.0",

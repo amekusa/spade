@@ -15,6 +15,7 @@ const nodeResolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const strip = require('@rollup/plugin-strip');
 const vue = require('rollup-plugin-vue');
+const postcss = require('rollup-plugin-postcss');
 
 const {
 	name,
@@ -64,6 +65,7 @@ const M = {
 			},
 		}),
 		vue(),
+		postcss(), // Required for <style>s in *.vue
 	],
 };
 
