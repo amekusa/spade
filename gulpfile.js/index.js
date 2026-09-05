@@ -19,6 +19,7 @@ const $P = $.parallel;
 const $rename = require('gulp-rename');
 
 // misc.
+const less = require('less');
 const {rollup} = require('rollup');
 const bs = require('browser-sync').create();
 const {subst, io, sh} = require('@amekusa/util.js');
@@ -146,13 +147,18 @@ const T = {
 		bs.notify(`Building CSS...`);
 		let src = C.paths.src_css;
 		let dst = C.paths.dst_css;
-		let opts = prod ? '' : '--source-map';
-		return sh.exec(`lessc ${opts} '${src}' '${dst}'`).catch(err => {
-			bs.notify(`<b style="color:hotpink">CSS Build Failure!</b>`, 15000);
-			throw err;
-		}).then(() => {
-			bs.reload('*.css');
-		});
+		let opts = {
+			paths: [C.dirs.src_css],
+			sourceMap: !prod,
+		};
+		return $.src(src)
+			.pipe(io.transform(data => {
+				return less.render(data, opts)
+					.catch(bsError(`Failed to build CSS`))
+					.then(out => out.css);
+			}))
+			.pipe($rename(basename(dst)))
+			.pipe($.dest(dirname(dst)));
 	},
 
 	css_minify() {
