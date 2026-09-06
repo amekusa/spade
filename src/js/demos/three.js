@@ -15,18 +15,19 @@ export function start(rendererOpts) {
 	let aspect = canvas.style.aspectRatio || (16 / 9);
 	let width  = canvas.clientWidth;
 	let height = canvas.clientHeight;
+	let resized = false;
 
 	renderer = new THREE.WebGLRenderer(rendererOpts);
 	renderer.setAnimationLoop(animate);
 
-	let camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 10);
-	camera.aspect = aspect;
+	let camera = new THREE.PerspectiveCamera(70, aspect, 0.01, 10);
 	camera.position.z = 1;
 
 	resizer = new ResizeObserver(entries => {
-		let {width, height} = entries[0].contentRect;
-		renderer.setSize(width, height, false);
-		camera.updateProjectionMatrix();
+		let rect = entries[0].contentRect;
+		width  = rect.width;
+		height = rect.height;
+		resized = true;
 	});
 	resizer.observe(canvas);
 
@@ -37,6 +38,11 @@ export function start(rendererOpts) {
 	scene.add(mesh);
 
 	function animate(time) {
+		if (resized) {
+			renderer.setSize(width, height, false);
+			camera.updateProjectionMatrix();
+			resized = false;
+		}
 		mesh.rotation.x = time / 2000;
 		mesh.rotation.y = time / 1000;
 		renderer.render(scene, camera);
