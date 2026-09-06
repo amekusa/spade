@@ -13,5 +13,15 @@
     "resolve": "local",
     "src":     "lenna.png",
     "dst":     "assets"
+  },
+  {
+    "resolve": "require",
+    "src":     "@fontsource/iosevka/files/iosevka-latin-300-normal.woff2",
+    "dst":     "css"
+  },
+  {
+    "resolve": "require",
+    "src":     "@fontsource/iosevka/files/iosevka-latin-800-normal.woff2",
+    "dst":     "css"
   }
 ]
