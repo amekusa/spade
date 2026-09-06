@@ -12,12 +12,11 @@ let renderer, resizer;
 export function start(rendererOpts) {
 	end();
 	let {canvas} = rendererOpts;
-	let aspect = 16 / 9;
+	let aspect = canvas.style.aspectRatio || (16 / 9);
 	let width  = canvas.clientWidth;
-	let height = width / aspect;
+	let height = canvas.clientHeight;
 
 	renderer = new THREE.WebGLRenderer(rendererOpts);
-	renderer.setSize(width, height, false);
 	renderer.setAnimationLoop(animate);
 
 	let camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 10);
@@ -25,8 +24,7 @@ export function start(rendererOpts) {
 	camera.position.z = 1;
 
 	resizer = new ResizeObserver(entries => {
-		let {width} = entries[0].contentRect;
-		let height = width / aspect;
+		let {width, height} = entries[0].contentRect;
 		renderer.setSize(width, height, false);
 		camera.updateProjectionMatrix();
 	});
