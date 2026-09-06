@@ -24,8 +24,10 @@ export default {
 <style scoped>
 canvas {
 	aspect-ratio: 16 / 9;
-	width: 100% !important;
+	width:  100% !important;
 	height: auto !important;
+	min-width:  16px;
+	min-height:  9px;
 }
 </style>
 
