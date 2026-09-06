@@ -8,5 +8,10 @@
     "resolve": "local",
     "src":     "extra.css",
     "dst":     "css"
+  },
+  {
+    "resolve": "local",
+    "src":     "lenna.png",
+    "dst":     "assets"
   }
 ]
