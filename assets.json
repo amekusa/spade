@@ -1,27 +1,25 @@
 [
   {
     "resolve": "local",
-    "src":     "favicon.svg",
-    "dst":     "."
+    "src": "favicon.svg",
+    "dst": "."
   },
   {
     "resolve": "local",
-    "src":     "extra.css",
-    "dst":     "css"
+    "src": "extra.css",
+    "dst": "css"
   },
   {
     "resolve": "local",
-    "src":     "lenna.png",
-    "dst":     "assets"
+    "src": "lenna.png",
+    "dst": "assets"
   },
   {
     "resolve": "require",
-    "src":     "@fontsource/iosevka/files/iosevka-latin-300-normal.woff2",
-    "dst":     "css"
-  },
-  {
-    "resolve": "require",
-    "src":     "@fontsource/iosevka/files/iosevka-latin-800-normal.woff2",
-    "dst":     "css"
+    "src": [
+      "@fontsource/iosevka/files/iosevka-latin-300-normal.woff2",
+      "@fontsource/iosevka/files/iosevka-latin-800-normal.woff2"
+    ],
+    "dst": "css"
   }
 ]
