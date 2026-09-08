@@ -75,6 +75,20 @@ function minifyCSS(data, enc) {
 	});
 }
 
+function success(msg, duration = 4000) {
+	return res => {
+		bs.notify(`<span style="font-weight: bold; color: #22ff66">${msg}</span>`, duration);
+		return Promise.resolve(res);
+	};
+}
+
+function failure(msg, duration = 4000) {
+	return err => {
+		bs.notify(`<span style="font-weight: bold; color: #ff2266">${msg}</span>`, duration);
+		return Promise.reject(err);
+	};
+}
+
 // tasks
 const T = {
 
