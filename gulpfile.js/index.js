@@ -39,18 +39,15 @@ const C = {};
 function init() {
 	let config = io.requireNew(`${root}/build.json`);
 	let paths = {};
-	let dirs = {};
 	for (let k in config.paths) {
 		let v = config.paths[k];
 		let dir = '';
 		if      (k.startsWith('dst_')) dir = config.paths.dst;
 		else if (k.startsWith('src_')) dir = config.paths.src;
 		paths[k] = join(root, dir, v);
-		dirs[k] = dirname(paths[k]);
 	}
 	C.config = config; // build config
 	C.paths = paths; // absolute paths
-	C.dirs = dirs; // absolute dirs
 	C.rollup = null; // rollup cache
 }
 
@@ -150,11 +147,11 @@ const T = {
 
 	js_minify() {
 		let src = C.paths.dst_js;
-		let dst = C.dirs.dst_js;
+		let dst = src;
 		return $.src(src)
 			.pipe(io.transform((data, enc) => minifyJS(data, enc)))
 			.pipe($rename({extname: '.min.js'}))
-			.pipe($.dest(dst));
+			.pipe($.dest(dirname(src)));
 	},
 
 	css_build() {
@@ -162,8 +159,8 @@ const T = {
 		let src = C.paths.src_css;
 		let dst = C.paths.dst_css;
 		let opts = {
-			paths: [C.dirs.src_css],
 			sourceMap: !prod,
+			paths: [dirname(src)],
 		};
 		return $.src(src)
 			.pipe(io.transform(data => {
@@ -177,11 +174,11 @@ const T = {
 
 	css_minify() {
 		let src = C.paths.dst_css;
-		let dst = C.dirs.dst_css;
+		let dst = src;
 		return $.src(src)
 			.pipe(io.transform((data, enc) => minifyCSS(data, enc)))
 			.pipe($rename({extname: '.min.css'}))
-			.pipe($.dest(dst));
+			.pipe($.dest(dirname(dst)));
 	},
 
 	html_build() {
@@ -285,11 +282,11 @@ T.dist = prod ? $S(
 
 T.watch = function watch() {
 	$.watch([
-		`${C.dirs.src_js}/**/*.{js,vue}`,
 	], T.js_build);
+		`${dirname(C.paths.src_js)}/**/*.{js,vue}`,
 
 	$.watch([
-		`${C.dirs.src_css}/**/*.{less,css}`,
+		`${dirname(C.paths.src_css)}/**/*.{less,css}`,
 	], T.css_build);
 
 	$.watch([
