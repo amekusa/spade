@@ -72,17 +72,31 @@ function minifyCSS(data, enc) {
 	});
 }
 
-function success(msg, duration = 4000) {
+function notify(msg) {
+	return () => {
+		bs.notify(msg, 4000);
+		return  Promise.resolve();
+	};
+}
+
+function success(msg) {
 	return res => {
-		bs.notify(`<span style="font-weight: bold; color: #22ff66">${msg}</span>`, duration);
+		bs.notify(`<span style="font-weight: bold; color: #22ff66">${msg}</span>`, 4000);
 		return Promise.resolve(res);
 	};
 }
 
-function failure(msg, duration = 4000) {
+function failure(msg) {
 	return err => {
-		bs.notify(`<span style="font-weight: bold; color: #ff2266">${msg}</span>`, duration);
+		bs.notify(`<span style="font-weight: bold; color: #ff2266">${msg}</span>`, 4000);
 		return Promise.reject(err);
+	};
+}
+
+function reload(file) {
+	return function reload() {
+		bs.reload(file);
+		return Promise.resolve();
 	};
 }
 
@@ -128,21 +142,16 @@ const T = {
 			conf = io.requireNew(`${root}/rollup.config.js`);
 			conf.cache = dev;
 		}
-		return rollup(conf).then(bundle => {
-			if (bundle.cache) {
-				conf.cache = bundle.cache;
-				log(`Rollup: Cache is stored.`);
-			}
-			C.rollup = conf;
-			return bundle.write(conf.output);
-
-		}).catch(err => {
-			bs.notify(`<b style="color:hotpink">JS Build Failure!</b>`, 15000);
-			throw err;
-
-		}).then(() => {
-			bs.reload();
-		});
+		return rollup(conf)
+			.then(bundle => {
+				if (bundle.cache) {
+					conf.cache = bundle.cache;
+					log(`Rollup: Cache is stored.`);
+				}
+				C.rollup = conf;
+				return bundle.write(conf.output);
+			})
+			.catch(failure(`Failed to build JS`));
 	},
 
 	js_minify() {
@@ -159,13 +168,16 @@ const T = {
 		let src = C.paths.src_css;
 		let dst = C.paths.dst_css;
 		let opts = {
-			sourceMap: !prod,
 			paths: [dirname(src)],
+			sourceMap: prod ? false : {
+				outputSourceFiles: true, // write source content to sourcemap
+				sourceMapFileInline: true, // write sourcemap to the compiled css
+			},
 		};
 		return $.src(src)
 			.pipe(io.transform(data => {
 				return less.render(data, opts)
-					.catch(bsError(`Failed to build CSS`))
+					.catch(failure(`Failed to build CSS`))
 					.then(out => out.css);
 			}))
 			.pipe($rename(basename(dst)))
@@ -214,6 +226,7 @@ const T = {
 	},
 
 	html_assets(done) {
+		bs.notify('Importing assets...');
 		if (!C.assets) {
 			C.assets = {
 				entries: io.requireNew(`${root}/assets.json`),
@@ -241,11 +254,13 @@ const T = {
 		if (C.config.tweaks.nojekyll) {
 			importer.add({resolve: 'create', as: '.nojekyll', src: '', dst: '.'});
 		}
-		return importer.import().then(() => {
-			for (let type in importer.results) {
-				C.assets.html[type] = importer.toHTML(type);
-			}
-		});
+		return importer.import()
+			.catch(failure('Failed to import assets'))
+			.then(() => {
+				for (let type in importer.results) {
+					C.assets.html[type] = importer.toHTML(type);
+				}
+			});
 	},
 
 }
@@ -282,33 +297,30 @@ T.dist = prod ? $S(
 
 T.watch = function watch() {
 	$.watch([
-	], T.js_build);
 		`${dirname(C.paths.src_js)}/**/*.{js,vue}`,
+	], $S(T.js_build, reload()));
 
 	$.watch([
 		`${dirname(C.paths.src_css)}/**/*.{less,css}`,
-	], T.css_build);
+	], $S(T.css_build, reload('*.css')));
 
 	$.watch([
 		`${C.paths.src}/index.html`,
-	], T.html_build);
+	], $S(T.html_build, reload()));
 
 	$.watch([
 		`${root}/assets.json`,
+		`${C.paths.src_assets}/**/*`,
 	], $S(
 		$task(() => { C.assets = null }),
-		T.html
+		T.html, reload()
 	));
-
-	$.watch([
-		`${C.paths.src_assets}/**/*`,
-	], T.html);
 
 	$.watch([
 		`${root}/rollup.config.js`,
 	], $S(
 		$task(() => { C.rollup = null }),
-		T.js_build
+		T.js_build, reload()
 	));
 
 	$.watch([
