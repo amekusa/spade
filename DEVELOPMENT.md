@@ -6,7 +6,7 @@ npm install
 ```
 
 ## Configure
-Edit `build.json`.
+Edit `config.json`.
 
 ## Build
 ```sh

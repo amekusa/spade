@@ -37,7 +37,7 @@ const C = {};
 
 // initialize the context
 function init() {
-	let config = io.requireNew(`${root}/build.json`);
+	let config = io.requireNew(`${root}/config.json`);
 	let paths = {};
 	for (let k in config.paths) {
 		let v = config.paths[k];
@@ -329,7 +329,7 @@ T.watch = function watch() {
 
 	$.watch([
 		`${root}/package.json`,
-		`${root}/build.json`,
+		`${root}/config.json`,
 	], bs.active ? $S(
 		$task(bs.exit),
 		$task(init),

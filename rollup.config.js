@@ -25,7 +25,7 @@ const {
 		dst,
 		dst_js,
 	}
-} = require('./build.json');
+} = require('./config.json');
 
 const input = join(src, src_js);
 const input_dir = dirname(input);
