@@ -75,7 +75,7 @@ function minifyCSS(data, enc) {
 function notify(msg) {
 	return () => {
 		bs.notify(msg, 4000);
-		return  Promise.resolve();
+		return Promise.resolve();
 	};
 }
 
@@ -181,7 +181,8 @@ const T = {
 					.then(out => out.css);
 			}))
 			.pipe($rename(basename(dst)))
-			.pipe($.dest(dirname(dst)));
+			.pipe($.dest(dirname(dst)))
+			.pipe(bs.stream());
 	},
 
 	css_minify() {
@@ -302,7 +303,7 @@ T.watch = function watch() {
 
 	$.watch([
 		`${dirname(C.paths.src_css)}/**/*.{less,css}`,
-	], $S(T.css_build, reload('*.css')));
+	], T.css_build);
 
 	$.watch([
 		`${C.paths.src}/index.html`,
@@ -310,11 +311,14 @@ T.watch = function watch() {
 
 	$.watch([
 		`${root}/assets.json`,
-		`${C.paths.src_assets}/**/*`,
 	], $S(
 		$task(() => { C.assets = null }),
 		T.html, reload()
 	));
+
+	$.watch([
+		`${C.paths.src_assets}/**/*`,
+	], $S(T.html_assets, reload()));
 
 	$.watch([
 		`${root}/rollup.config.js`,
