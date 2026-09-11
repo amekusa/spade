@@ -14,14 +14,14 @@
     "clean-css": "^5.3.3",
     "gulp": "^5.0.1",
     "gulp-rename": "^2.1.0",
-    "less": "^4.5.1",
-    "rollup": "^4.54.0",
+    "less": "^4.9.1",
+    "rollup": "^4.63.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue": "^6.0.0",
-    "terser": "^5.44.1",
-    "three": "^0.182.0",
-    "vue": "^3.5.26",
-    "vue-router": "^4.6.4"
+    "terser": "^5.51.2",
+    "three": "^0.186.0",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1"
   },
   "boilerplate": {
     "repository": "https://github.com/amekusa/spade.git",
