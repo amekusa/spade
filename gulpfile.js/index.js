@@ -159,7 +159,6 @@ const T = {
 		let dst = src;
 		return $.src(src)
 			.pipe(io.transform((data, enc) => minifyJS(data, enc)))
-			.pipe($rename({extname: '.min.js'}))
 			.pipe($.dest(dirname(src)));
 	},
 
@@ -190,7 +189,6 @@ const T = {
 		let dst = src;
 		return $.src(src)
 			.pipe(io.transform((data, enc) => minifyCSS(data, enc)))
-			.pipe($rename({extname: '.min.css'}))
 			.pipe($.dest(dirname(dst)));
 	},
 
@@ -202,21 +200,7 @@ const T = {
 				let data = Object.assign({
 					assets: C.assets.html,
 				}, C.config);
-				return subst(content, data, {
-					modifier(v, k) {
-						if (prod) {
-							switch (k) {
-							case 'paths.dst_js':
-								v = io.ext(v, '.min.js');
-								break;
-							case 'paths.dst_css':
-								v = io.ext(v, '.min.css');
-								break;
-							}
-						}
-						return v;
-					}
-				});
+				return subst(content, data);
 			}))
 			.pipe($.dest(dst));
 
