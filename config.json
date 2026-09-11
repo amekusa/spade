@@ -13,7 +13,6 @@
     "dst_assets": "."
   },
   "tweaks": {
-    "nojekyll": true,
     "404_fallback": true
   }
 }

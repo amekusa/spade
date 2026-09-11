@@ -236,9 +236,6 @@ const T = {
 		}
 		let importer = C.assets.importer;
 		importer.add(C.assets.entries);
-		if (C.config.tweaks.nojekyll) {
-			importer.add({resolve: 'create', as: '.nojekyll', src: '', dst: '.'});
-		}
 		return importer.import()
 			.catch(failure('Failed to import assets'))
 			.then(() => {

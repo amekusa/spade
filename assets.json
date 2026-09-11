@@ -6,13 +6,8 @@
   },
   {
     "resolve": "local",
-    "src": "extra.css",
-    "dst": "css"
-  },
-  {
-    "resolve": "local",
-    "src": "lenna.png",
-    "dst": "assets"
+    "src": ".nojekyll",
+    "dst": "."
   },
   {
     "resolve": "require",
@@ -21,5 +16,15 @@
       "@fontsource/iosevka/files/iosevka-latin-800-normal.woff2"
     ],
     "dst": "css"
+  },
+  {
+    "resolve": "local",
+    "src": "extra.css",
+    "dst": "css"
+  },
+  {
+    "resolve": "local",
+    "src": "lenna.png",
+    "dst": "img"
   }
 ]
